@@ -1,0 +1,10 @@
+#summary An overview of how the program works
+#labels Phase-Implementation
+
+When the program starts up (MainForm.MainForm_Shown), 2 services are created: 
+  * Listener which starts a listening TCP socket.  The port number is assigned by the OS.
+  * Browser which sends game query packets to the given WC3 server address.
+
+The browser sends WC3 query packets to the given WC3 server address. (Browser.SendQuery).  When it receives a response (Browser.ProcessResponses), it modifies the response (Browser.ModifyGameName and Browser.ModifyGamePort) and broadcasts it on the local network.
+
+When the Listener gets a connection, a Proxy object is created (MainForm.GotConnection).  The proxy blindly forwards data between the client and the server (TcpProxy.ThreadFunc).
