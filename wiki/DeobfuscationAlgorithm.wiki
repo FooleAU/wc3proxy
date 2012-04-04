@@ -7,7 +7,8 @@ Some parts of the query packets are obfuscated/encrypted using a very simple alg
 = Pseudocode =
   * Take the next byte from the source.  If it is zero, stop.
 
-byte b = Data[pos + Offset];
+byte b = Data`[`pos + Offset`]`;
+
 if (b == 0) break;
 
   * If the offset is a multiple of 8, store its value.
@@ -20,13 +21,13 @@ flag = mask & (0x1 << (pos % 8))
 
  * If it is zero, subtract 1 from the value and add it to the result
 
-output.WriteByte((byte)(b - 1));
+output.!WriteByte((byte)(b - 1));
 
   * Otherwise, just add it to the result
 
-output.WriteByte(b);
+output.!WriteByte(b);
 
-Example 1:
+== Example 1 ==
 
 2f 73 65 5f 77 33 2f 31 
 
@@ -36,7 +37,7 @@ Output:
 
 73 65 5F *76* 33 *2e* *30*
 
-Example 2:
+== Example 2 ==
 
 39 79 2f 77 33 6d 01 5b
 
