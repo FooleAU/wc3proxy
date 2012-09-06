@@ -19,11 +19,11 @@ if (pos % 8 == 0) mask = b;
 
 flag = mask & (0x1 << (pos % 8))
 
- * If it is zero, subtract 1 from the value and add it to the result
+ * If it is zero, subtract 1 from the value and append it to the result
 
 output.!WriteByte((byte)(b - 1));
 
-  * Otherwise, just add it to the result
+  * Otherwise, just append it to the result
 
 output.!WriteByte(b);
 
