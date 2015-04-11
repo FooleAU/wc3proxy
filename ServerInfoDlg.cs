@@ -42,81 +42,81 @@ namespace Foole.WC3Proxy
         }
     }
 
-    public partial class ServerInfoDlg : Form
+    sealed partial class ServerInfoDlg : Form
     {
-        private IPHostEntry mHost;
+        IPHostEntry _host;
 
         public ServerInfoDlg()
         {
             InitializeComponent();
 
-            cbxWC3Version.Items.Add(new WC3Version(0x1a, "1.26"));
-            cbxWC3Version.Items.Add(new WC3Version(0x19, "1.25"));
-            cbxWC3Version.Items.Add(new WC3Version(0x18, "1.24"));
-            cbxWC3Version.Items.Add(new WC3Version(0x17, "1.23"));
-            cbxWC3Version.Items.Add(new WC3Version(0x16, "1.22"));
-            cbxWC3Version.Items.Add(new WC3Version(0x15, "1.21"));
-            cbxWC3Version.Items.Add(new WC3Version(0x1b, "1.27 (Untested)"));
+            versionComboBox.Items.Add(new WC3Version(0x1a, "1.26"));
+            versionComboBox.Items.Add(new WC3Version(0x19, "1.25"));
+            versionComboBox.Items.Add(new WC3Version(0x18, "1.24"));
+            versionComboBox.Items.Add(new WC3Version(0x17, "1.23"));
+            versionComboBox.Items.Add(new WC3Version(0x16, "1.22"));
+            versionComboBox.Items.Add(new WC3Version(0x15, "1.21"));
+            versionComboBox.Items.Add(new WC3Version(0x1b, "1.27 (Untested)"));
         }
 
         public IPHostEntry Host
-        { 
-            get { return mHost; }
-            set 
+        {
+            get { return _host; }
+            set
             {
-                // TODO: Check InvokeRequired?
                 if (value == null)
-                    txtServerAddress.Text = String.Empty;
+                    serverAddressTextBox.Text = String.Empty;
                 else
-                    txtServerAddress.Text = value.HostName; 
+                    serverAddressTextBox.Text = value.HostName;
             }
         }
 
         public bool Expansion
-        { 
-            get { return chkExpansion.Checked; }
-            set { chkExpansion.Checked = value; }
+        {
+            get { return expansionCheckBox.Checked; }
+            set { expansionCheckBox.Checked = value; }
         }
 
         public byte Version
         {
-            get 
+            get
             {
-                WC3Version vers = (WC3Version)cbxWC3Version.SelectedItem;
-                return vers.Id; 
+                WC3Version vers = (WC3Version)versionComboBox.SelectedItem;
+                return vers.Id;
             }
-            set 
+            set
             {
-                foreach (WC3Version vers in cbxWC3Version.Items)
+                foreach (WC3Version vers in versionComboBox.Items)
                 {
                     if (vers.Id == value)
                     {
-                        cbxWC3Version.SelectedItem = vers;
+                        versionComboBox.SelectedItem = vers;
                         break;
                     }
                 }
             }
         }
 
-        private void btnOk_Click(object sender, EventArgs e)
+        void btnOk_Click(object sender, EventArgs e)
         {
-            if (txtServerAddress.Text.Length == 0)
+            if (serverAddressTextBox.Text.Length == 0)
             {
                 MessageBox.Show("Please enter a server address", "WC3 Proxy", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
-                txtServerAddress.Focus();
+                serverAddressTextBox.Focus();
                 return;
             }
             try
             {
-                this.UseWaitCursor = true;
-                mHost = Dns.GetHostEntry(txtServerAddress.Text);
-                this.UseWaitCursor = false;
-            } catch (Exception ex)
+                UseWaitCursor = true;
+                _host = Dns.GetHostEntry(serverAddressTextBox.Text);
+                UseWaitCursor = false;
+            }
+            catch (Exception ex)
             {
-                this.UseWaitCursor = false;
+                UseWaitCursor = false;
                 // SocketException : No such host is known.
                 MessageBox.Show("DNS Lookup failed: " + ex.Message, "WC3 Proxy", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
-                txtServerAddress.Focus();
+                serverAddressTextBox.Focus();
                 return;
             }
 
@@ -124,7 +124,7 @@ namespace Foole.WC3Proxy
             Hide();
         }
 
-        private void btnCancel_Click(object sender, EventArgs e)
+        void btnCancel_Click(object sender, EventArgs e)
         {
             DialogResult = DialogResult.Cancel;
             Hide();

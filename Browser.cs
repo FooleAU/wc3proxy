@@ -28,7 +28,7 @@ using System.Timers;
 
 namespace Foole.WC3Proxy
 {
-    public struct GameInfo
+    struct GameInfo
     {
         public int GameId;
         public string Name;
@@ -39,98 +39,97 @@ namespace Foole.WC3Proxy
         public int PlayerSlots;
     }
 
-    public delegate void FoundServerHandler(GameInfo Server);
-    public delegate void QuerySentHandler();
+    delegate void FoundServerHandler(GameInfo server);
 
-    class Browser
+    sealed class Browser
     {
-        private Socket mBrowseSocket;
-        private byte[] mBrowsePacket;
-        private IPEndPoint mServerEP;
-        private IPEndPoint mClientEP = new IPEndPoint(IPAddress.Broadcast, 6112);
-        private Timer mQueryTimer;
-        private bool mQuerying;
-        private byte[] mBuffer = new byte[512];
-        private bool mExpansion;
-        private int mProxyPort;
-        private byte mVersion; // 1.22 = 0x16, 1.21 = 0x15
+        Socket _browseSocket;
+        byte[] _browsePacket;
+        IPEndPoint _serverEP;
+        IPEndPoint _clientEP = new IPEndPoint(IPAddress.Broadcast, 6112);
+        Timer _queryTimer;
+        bool _querying;
+        byte[] _buffer = new byte[512];
+        bool _expansion;
+        int _proxyPort;
+        byte _version; // 1.22 = 0x16, 1.21 = 0x15
 
         public event FoundServerHandler FoundServer;
-        public event QuerySentHandler QuerySent;
+        public event Action QuerySent;
 
-        public Browser(IPAddress ServerAddress, int ProxyPort, byte Version, bool Expansion)
+        public Browser(IPAddress serverAddress, int proxyPort, byte version, bool expansion)
         {
-            mProxyPort = ProxyPort;
-            mVersion = Version;
-            mExpansion = Expansion;
-            mQueryTimer = new Timer(1000);
-            mQueryTimer.AutoReset = true;
-            mQueryTimer.Elapsed += new ElapsedEventHandler(mQueryTimer_Elapsed);
+            _proxyPort = proxyPort;
+            _version = version;
+            _expansion = expansion;
+            _queryTimer = new Timer(1000);
+            _queryTimer.AutoReset = true;
+            _queryTimer.Elapsed += new ElapsedEventHandler(QueryTimer_Elapsed);
             // WC3 always listens on UDP 6112
-            mServerEP = new IPEndPoint(ServerAddress, 6112);
+            _serverEP = new IPEndPoint(serverAddress, 6112);
         }
 
         public byte Version
         {
-            get { return mVersion; }
+            get { return _version; }
             set
             {
-                mVersion = value;
+                _version = value;
                 UpdateBrowsePacket();
             }
         }
 
         public bool Expansion
         {
-            get { return mExpansion; }
+            get { return _expansion; }
             set
             {
-                mExpansion = value;
+                _expansion = value;
                 UpdateBrowsePacket();
             }
         }
-        
+
         public IPAddress ServerAddress
         {
-            get { return mServerEP.Address; }
-            set { mServerEP.Address = value; }
+            get { return _serverEP.Address; }
+            set { _serverEP.Address = value; }
         }
-        
+
         public void Run()
         {
             UpdateBrowsePacket();
 
-            mBrowseSocket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
-            mBrowseSocket.Bind(new IPEndPoint(IPAddress.Any, 0));
-            mBrowseSocket.EnableBroadcast = true;
+            _browseSocket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
+            _browseSocket.Bind(new IPEndPoint(IPAddress.Any, 0));
+            _browseSocket.EnableBroadcast = true;
 
-            mQueryTimer.Start();
+            _queryTimer.Start();
         }
 
         public void Stop()
         {
-            mQueryTimer.Stop();
-            mBrowseSocket.Close();
-            mBrowseSocket = null;
+            _queryTimer.Stop();
+            _browseSocket.Close();
+            _browseSocket = null;
         }
 
-        private void mQueryTimer_Elapsed(object sender, ElapsedEventArgs e)
+        void QueryTimer_Elapsed(object sender, ElapsedEventArgs e)
         {
             ProcessResponses();
 
-            if (mQuerying) return;
-            mQuerying = true;
+            if (_querying) return;
+            _querying = true;
 
             SendQuery();
 
-            mQuerying = false;
+            _querying = false;
 
             ProcessResponses();
         }
 
         public void SendQuery()
         {
-            mBrowseSocket.SendTo(mBrowsePacket, mServerEP);
+            _browseSocket.SendTo(_browsePacket, _serverEP);
             if (QuerySent != null) QuerySent();
         }
 
@@ -138,32 +137,33 @@ namespace Foole.WC3Proxy
         {
             bool receivedany = false;
 
-            while (mBrowseSocket.Poll(0, SelectMode.SelectRead))
+            while (_browseSocket.Poll(0, SelectMode.SelectRead))
             {
                 int len = 0;
                 try
                 {
-                    len = mBrowseSocket.Receive(mBuffer);
-                } catch (SocketException)
+                    len = _browseSocket.Receive(_buffer);
+                }
+                catch (SocketException)
                 {
                     // "An existing connection was forcibly closed by the remote host"
                     break;
                 }
                 if (len == 0) break;
 
-                if (ExtractGameInfo(mBuffer, len) == false) continue;
+                if (ExtractGameInfo(_buffer, len) == false) continue;
 
                 receivedany = true;
-                ModifyGameName(mBuffer);
-                ModifyGamePort(mBuffer, len, mProxyPort);
-                mBrowseSocket.SendTo(mBuffer, len, SocketFlags.None, mClientEP);
+                ModifyGameName(_buffer);
+                ModifyGamePort(_buffer, len, _proxyPort);
+                _browseSocket.SendTo(_buffer, len, SocketFlags.None, _clientEP);
             }
 
             return receivedany;
         }
 
         // Extracts the server's details from the query response and raises an event for it
-        private bool ExtractGameInfo(byte[] response, int Length)
+        bool ExtractGameInfo(byte[] response, int Length)
         {
             if (response[0] != 0xf7 || response[1] != 0x30) return false;
 
@@ -187,22 +187,22 @@ namespace Foole.WC3Proxy
             return true;
         }
 
-        public void SendGameCancelled(int GameId)
+        public void SendGameCancelled(int gameId)
         {
-            byte[] packet = new byte[] { 0xf7, 0x33, 0x08, 0x00, (byte)GameId, 0x00, 0x00, 0x00 };
-            mBrowseSocket.SendTo(packet, mClientEP);
+            byte[] packet = new byte[] { 0xf7, 0x33, 0x08, 0x00, (byte)gameId, 0x00, 0x00, 0x00 };
+            _browseSocket.SendTo(packet, _clientEP);
         }
 
         // The client wont update the player count unless this is sent
-        public void SendGameAnnounce(GameInfo Game)
+        public void SendGameAnnounce(GameInfo gameInfo)
         {
-            int players = Game.SlotCount - Game.PlayerSlots + Game.CurrentPlayers;
-            byte[] packet = new byte[] { 0xf7, 0x32, 0x10, 0x00, (byte)Game.GameId, 0x00, 0x00, 0x00, (byte)players, 0, 0, 0, (byte)Game.SlotCount, 0, 0, 0 };
-            mBrowseSocket.SendTo(packet, mClientEP);
+            int players = gameInfo.SlotCount - gameInfo.PlayerSlots + gameInfo.CurrentPlayers;
+            byte[] packet = new byte[] { 0xf7, 0x32, 0x10, 0x00, (byte)gameInfo.GameId, 0x00, 0x00, 0x00, (byte)players, 0, 0, 0, (byte)gameInfo.SlotCount, 0, 0, 0 };
+            _browseSocket.SendTo(packet, _clientEP);
         }
 
         //This is also used to decrypt recorded game file headers
-        private byte[] Decrypt(byte[] Data, int Offset)
+        byte[] Decrypt(byte[] data, int offset)
         {
             // TODO: calculate the real result length (Data.Length * 8 / 9?).
             // in=37, out=30.  in=3a, out=32.
@@ -211,12 +211,13 @@ namespace Foole.WC3Proxy
             byte mask = 0;
             while (true)
             {
-                byte b = Data[pos + Offset];
+                byte b = data[pos + offset];
                 if (b == 0) break;
                 if (pos % 8 == 0)
                 {
                     mask = b;
-                } else
+                }
+                else
                 {
                     if ((mask & (0x1 << (pos % 8))) == 0)
                         output.WriteByte((byte)(b - 1));
@@ -228,12 +229,12 @@ namespace Foole.WC3Proxy
             return output.ToArray();
         }
 
-        private string StringFromArray(byte[] Data, int Offset)
+        string StringFromArray(byte[] data, int offset)
         {
             StringBuilder sb = new StringBuilder();
             while (true)
             {
-                char c = (char)Data[Offset++];
+                char c = (char)data[offset++];
                 if (c == 0) break;
                 sb.Append(c);
             }
@@ -242,29 +243,29 @@ namespace Foole.WC3Proxy
 
         // Replace "Local Game" with "Proxy Game"
         // This will not work properly for other languages
-        private void ModifyGameName(byte[] Response)
+        void ModifyGameName(byte[] response)
         {
-            Response[0x14] = (byte)'P';
-            Response[0x15] = (byte)'r';
-            Response[0x16] = (byte)'o';
-            Response[0x17] = (byte)'x';
-            Response[0x18] = (byte)'y';
+            response[0x14] = (byte)'P';
+            response[0x15] = (byte)'r';
+            response[0x16] = (byte)'o';
+            response[0x17] = (byte)'x';
+            response[0x18] = (byte)'y';
         }
 
-        private void ModifyGamePort(byte[] Response, int Length, int Port)
+        void ModifyGamePort(byte[] response, int length, int port)
         {
-            int index = Length - 2;
-            Response[index] = (byte)(Port & 0xff);
-            Response[index + 1] = (byte)(Port >> 8);
+            int index = length - 2;
+            response[index] = (byte)(port & 0xff);
+            response[index + 1] = (byte)(port >> 8);
         }
 
         // Dummy version with hard coded query packet
-        private void UpdateBrowsePacket()
+        void UpdateBrowsePacket()
         {
-            if (mExpansion) // TFT - PX3W instead of 3RAW
-                mBrowsePacket = new byte[] { 0xf7, 0x2f, 0x10, 0x00, 0x50, 0x58, 0x33, 0x57, mVersion, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
+            if (_expansion) // TFT - PX3W instead of 3RAW
+                _browsePacket = new byte[] { 0xf7, 0x2f, 0x10, 0x00, 0x50, 0x58, 0x33, 0x57, _version, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
             else // ROC
-                mBrowsePacket = new byte[] { 0xf7, 0x2f, 0x10, 0x00, 0x33, 0x52, 0x41, 0x57, mVersion, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
+                _browsePacket = new byte[] { 0xf7, 0x2f, 0x10, 0x00, 0x33, 0x52, 0x41, 0x57, _version, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
         }
     }
 }

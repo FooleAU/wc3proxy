@@ -28,47 +28,47 @@ namespace Foole.WC3Proxy
 {
     delegate void ProxyDisconnectedHandler(TcpProxy Proxy);
 
-    class TcpProxy
+    sealed class TcpProxy
     {
-        private Socket mClientSocket;
-        private Socket mServerSocket;
-        private EndPoint mServerEP;
-        private Thread mThread;
-        private bool mRunning;
-        private byte[] mBuffer = new byte[2048];
+        Socket _clientSocket;
+        Socket _serverSocket;
+        EndPoint _serverEP;
+        Thread _thread;
+        bool _running;
+        byte[] _buffer = new byte[2048];
 
         public event ProxyDisconnectedHandler ProxyDisconnected;
 
-        public TcpProxy(Socket ClientSocket, EndPoint ServerEP)
+        public TcpProxy(Socket clientSocket, EndPoint serverEP)
         {
-            mClientSocket = ClientSocket;
-            mServerEP = ServerEP;
+            _clientSocket = clientSocket;
+            _serverEP = serverEP;
 
-            mServerSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+            _serverSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
         }
 
         public void Run()
         {
-            mServerSocket.Connect(mServerEP);
+            _serverSocket.Connect(_serverEP);
 
-            mRunning = true;
-            mThread = new Thread(new ThreadStart(ThreadFunc));
-            mThread.Start();
+            _running = true;
+            _thread = new Thread(new ThreadStart(ThreadFunc));
+            _thread.Start();
         }
 
         public void Stop()
         {
-            mRunning = false;
-            if (mThread != null) mThread.Join();
+            _running = false;
+            if (_thread != null) _thread.Join();
         }
 
-        private void ThreadFunc()
+        void ThreadFunc()
         {
             ArrayList sockets = new ArrayList(2);
-            sockets.Add(mClientSocket);
-            sockets.Add(mServerSocket);
+            sockets.Add(_clientSocket);
+            sockets.Add(_serverSocket);
 
-            while (mRunning)
+            while (_running)
             {
                 IList readsockets = (IList)sockets.Clone();
                 Socket.Select(readsockets, null, null, 1000000);
@@ -77,16 +77,17 @@ namespace Foole.WC3Proxy
                     int length = 0;
                     try
                     {
-                        length = s.Receive(mBuffer);
-                    } catch { }
+                        length = s.Receive(_buffer);
+                    }
+                    catch { }
                     if (length == 0)
                     {
-                        mRunning = false;
+                        _running = false;
                         if (ProxyDisconnected != null) ProxyDisconnected(this);
                         break;
                     }
-                    Socket dest = (s == mServerSocket) ? mClientSocket : mServerSocket;
-                    dest.Send(mBuffer, length, SocketFlags.None);
+                    Socket dest = (s == _serverSocket) ? _clientSocket : _serverSocket;
+                    dest.Send(_buffer, length, SocketFlags.None);
                 }
             }
         }

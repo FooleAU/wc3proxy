@@ -25,91 +25,87 @@ using System.Net.Sockets;
 
 namespace Foole.Net
 {
-	public delegate void GotConnectionDelegate(Socket ClientSocket);
+    delegate void GotConnectionDelegate(Socket ClientSocket);
 
-	public class Listener
-	{
-		private Socket ListenSocket;
-		private GotConnectionDelegate mGotConnection;
-		private IPAddress mAddress;
-		private int mPort;
+    sealed class Listener
+    {
+        Socket _listenSocket;
+        GotConnectionDelegate _connectionHandler;
+        IPAddress _address;
+        int _port;
 
-		private bool mStop = false;
-		private AsyncCallback cbAccept;
+        bool _stop;
+        AsyncCallback _acceptCallback;
 
-		public Listener(IPAddress Addr, int Port, GotConnectionDelegate GotConnection)
-		{
-			Init(Addr, Port, GotConnection);
-		}
+        public Listener(IPAddress address, int port, GotConnectionDelegate connectionHandler)
+        {
+            _address = address;
+            _port = port;
+            _connectionHandler = connectionHandler;
+            _acceptCallback = new AsyncCallback(EndAccept);
+        }
 
-		public Listener(int Port, GotConnectionDelegate GotConnection)
-		{
-			Init(IPAddress.Any, Port, GotConnection);
-		}
+        public Listener(int port, GotConnectionDelegate connectionHandler)
+            : this(IPAddress.Any, port, connectionHandler)
+        {
+        }
 
-		public Listener(GotConnectionDelegate GotConnection)
-		{
-			Init(IPAddress.Any, 0, GotConnection);
-		}
-		
-		private void Init(IPAddress Addr, int Port, GotConnectionDelegate GotConnection)
-		{
-			mAddress = Addr;
-			mPort = Port;
-			mGotConnection = GotConnection;
-			cbAccept = new AsyncCallback(EndAccept);
-		}
+        public Listener(GotConnectionDelegate connectionHandler)
+            : this(IPAddress.Any, 0, connectionHandler)
+        {
+        }
 
-		public void Run()
-		{
-			mStop = false;
+        public void Run()
+        {
+            _stop = false;
 
-			IPEndPoint EndPoint = new IPEndPoint(mAddress, mPort);
+            IPEndPoint EndPoint = new IPEndPoint(_address, _port);
 
-			ListenSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.IP);
-            ListenSocket.Bind(EndPoint);
+            _listenSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.IP);
+            _listenSocket.Bind(EndPoint);
 
-			mPort = LocalEndPoint.Port;
-			ListenSocket.Listen(20);
+            _port = LocalEndPoint.Port;
+            _listenSocket.Listen(20);
 
-			BeginAccept();
-		}
+            BeginAccept();
+        }
 
-		private void BeginAccept()
-		{
-			if (mStop) return;
-			ListenSocket.BeginAccept(cbAccept, null);
-		} 
+        void BeginAccept()
+        {
+            if (_stop) return;
+            _listenSocket.BeginAccept(_acceptCallback, null);
+        }
 
-		private void EndAccept(IAsyncResult ar)
-		{
-            if (mStop) return;
+        void EndAccept(IAsyncResult result)
+        {
+            if (_stop) return;
 
-			try
+            try
             {
-                Socket Client = ListenSocket.EndAccept(ar);
-                mGotConnection(Client);
-            } catch (ObjectDisposedException)
+                Socket Client = _listenSocket.EndAccept(result);
+                _connectionHandler(Client);
+            }
+            catch (ObjectDisposedException)
             {
                 // Occasionally throws: System.ObjectDisposedException: Cannot access a disposed object.
                 // Do nothing
             }
-			BeginAccept();
-		}
+            BeginAccept();
+        }
 
-		public void Stop()
-		{
-			mStop = true;
-			ListenSocket.Close();
-			ListenSocket = null;
-		}
-		
-		public IPEndPoint LocalEndPoint
-		{
-			get
-			{
-				return (IPEndPoint)ListenSocket.LocalEndPoint;
-			}
-		}
-	}
+        public void Stop()
+        {
+            _stop = true;
+            _listenSocket.Close();
+            _listenSocket = null;
+        }
+
+        public IPEndPoint LocalEndPoint
+        {
+            get
+            {
+                return (IPEndPoint)_listenSocket.LocalEndPoint;
+            }
+        }
+    }
 }

@@ -20,33 +20,25 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
  */
 using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Drawing;
-using System.Windows.Forms;
+using System.IO;
 using System.Reflection;
+using System.Windows.Forms;
 
 namespace Foole.WC3Proxy
 {
-    partial class AboutBox : Form
+    sealed partial class AboutBox : Form
     {
         public AboutBox()
         {
             InitializeComponent();
 
-            //  Initialize the AboutBox to display the product information from the assembly information.
-            //  Change assembly information settings for your application through either:
-            //  - Project->Properties->Application->Assembly Information
-            //  - AssemblyInfo.cs
-            this.Text = String.Format("About {0}", AssemblyTitle);
-            this.labelProductName.Text = AssemblyProduct;
-            this.labelVersion.Text = String.Format("Version {0}", AssemblyVersion);
-            this.labelCopyright.Text = AssemblyCopyright;
-            this.labelCompanyName.Text = AssemblyCompany;
-            this.textBoxDescription.Text = AssemblyDescription;
+            Text = String.Format("About {0}", AssemblyTitle);
+            productNameLabel.Text = AssemblyProduct;
+            versionLabel.Text = String.Format("Version {0}", AssemblyVersion);
+            copyrightLabel.Text = AssemblyCopyright;
+            companyNameLabel.Text = AssemblyCompany;
+            descriptionTextBox.Text = AssemblyDescription;
         }
-
-        #region Assembly Attribute Accessors
 
         public string AssemblyTitle
         {
@@ -64,7 +56,7 @@ namespace Foole.WC3Proxy
                         return titleAttribute.Title;
                 }
                 // If there was no Title attribute, or if the Title attribute was the empty string, return the .exe name
-                return System.IO.Path.GetFileNameWithoutExtension(Assembly.GetExecutingAssembly().CodeBase);
+                return Path.GetFileNameWithoutExtension(Assembly.GetExecutingAssembly().CodeBase);
             }
         }
 
@@ -131,7 +123,5 @@ namespace Foole.WC3Proxy
                 return ((AssemblyCompanyAttribute)attributes[0]).Company;
             }
         }
-        #endregion
-
     }
 }
