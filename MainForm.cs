@@ -94,7 +94,11 @@ namespace Foole.WC3Proxy
             }
 
             if (serverHost == null || version == 0)
-                if (ShowInfoDialog(ref serverHost, ref version, ref expansion) == false) return;
+            {
+                var result = ShowInfoDialog(ref serverHost, ref version, ref expansion);
+                if (!result)
+                    return;
+            }
 
             MainForm mainForm = new MainForm(serverHost, version, expansion);
 
@@ -199,7 +203,7 @@ namespace Foole.WC3Proxy
                 return;
             }
 
-            if (_foundGame == false) icon.ShowBalloonTip(_balloonTipTimeout, _caption, "Found game: " + _gameInfo.Name, ToolTipIcon.Info);
+            if (!_foundGame) icon.ShowBalloonTip(_balloonTipTimeout, _caption, "Found game: " + _gameInfo.Name, ToolTipIcon.Info);
 
             gameNameValueLabel.Text = _gameInfo.Name;
             mapValueLabel.Text = _gameInfo.Map;
@@ -269,7 +273,7 @@ namespace Foole.WC3Proxy
 
             // We don't receive the "server cancelled" messages
             // because they are only ever broadcast to the host's LAN.
-            if (_foundGame == true)
+            if (_foundGame)
             {
                 TimeSpan interval = DateTime.Now - _lastFoundServer;
                 if (interval.TotalSeconds > 3)
