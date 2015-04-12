@@ -44,10 +44,12 @@ namespace Foole.WC3Proxy
 
     sealed partial class ServerInfoDlg : Form
     {
-        IPHostEntry _host;
+        ServerInfo _serverInfo;
 
-        public ServerInfoDlg()
+        public ServerInfoDlg(ServerInfo serverInfo)
         {
+            _serverInfo = serverInfo;
+
             InitializeComponent();
 
             versionComboBox.Items.Add(new WC3Version(0x1a, "1.26"));
@@ -57,42 +59,17 @@ namespace Foole.WC3Proxy
             versionComboBox.Items.Add(new WC3Version(0x16, "1.22"));
             versionComboBox.Items.Add(new WC3Version(0x15, "1.21"));
             versionComboBox.Items.Add(new WC3Version(0x1b, "1.27 (Untested)"));
-        }
 
-        public IPHostEntry Host
-        {
-            get { return _host; }
-            set
-            {
-                if (value == null)
-                    serverAddressTextBox.Text = String.Empty;
-                else
-                    serverAddressTextBox.Text = value.HostName;
-            }
-        }
+            serverAddressTextBox.Text = serverInfo.Hostname;
 
-        public bool Expansion
-        {
-            get { return expansionCheckBox.Checked; }
-            set { expansionCheckBox.Checked = value; }
-        }
+            expansionCheckBox.Checked = serverInfo.Expansion;
 
-        public byte Version
-        {
-            get
+            foreach (WC3Version vers in versionComboBox.Items)
             {
-                WC3Version vers = (WC3Version)versionComboBox.SelectedItem;
-                return vers.Id;
-            }
-            set
-            {
-                foreach (WC3Version vers in versionComboBox.Items)
+                if (vers.Id == serverInfo.Version)
                 {
-                    if (vers.Id == value)
-                    {
-                        versionComboBox.SelectedItem = vers;
-                        break;
-                    }
+                    versionComboBox.SelectedItem = vers;
+                    break;
                 }
             }
         }
@@ -108,7 +85,7 @@ namespace Foole.WC3Proxy
             try
             {
                 UseWaitCursor = true;
-                _host = Dns.GetHostEntry(serverAddressTextBox.Text);
+                Dns.GetHostEntry(serverAddressTextBox.Text);
                 UseWaitCursor = false;
             }
             catch (Exception ex)
@@ -119,6 +96,11 @@ namespace Foole.WC3Proxy
                 serverAddressTextBox.Focus();
                 return;
             }
+
+            _serverInfo.Hostname = serverAddressTextBox.Text;
+            _serverInfo.Expansion = expansionCheckBox.Checked;
+            var version = (WC3Version)versionComboBox.SelectedItem;
+            _serverInfo.Version = version.Id;
 
             DialogResult = DialogResult.OK;
             Hide();

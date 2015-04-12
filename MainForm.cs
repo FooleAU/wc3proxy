@@ -27,7 +27,6 @@ using System.Net.Sockets;
 using System.Windows.Forms;
 using Foole.WC3Proxy.Net;
 using Foole.WC3Proxy.Warcraft3;
-using Microsoft.Win32; // for Registry
 
 namespace Foole.WC3Proxy
 {
@@ -39,10 +38,9 @@ namespace Foole.WC3Proxy
         Browser _browser; // This sends game info queries to the server and forwards the responses to the client
         readonly List<TcpProxy> _proxies = new List<TcpProxy>(); // A collection of game proxies.  Usually we would only need 1 proxy.
 
+        readonly ServerInfo _serverInfo;
         IPHostEntry _serverHost;
         IPEndPoint _serverEP;
-        byte _version;
-        bool _expansion;
 
         // TODO: Possibly move these (and associated code) into the Browser class
         bool _foundGame;
@@ -51,8 +49,6 @@ namespace Foole.WC3Proxy
 
         const string _caption = "WC3 Proxy";
         const int _balloonTipTimeout = 1000;
-
-        static readonly string _regPath = @"HKEY_CURRENT_USER\Software\Foole\WC3 Proxy";
 
         // TODO: Configurable command line arguments for war3?
         // window       Windowed mode
@@ -67,118 +63,30 @@ namespace Foole.WC3Proxy
 
         static void Main(string[] args)
         {
-            IPHostEntry serverHost;
-            byte version;
-            bool expansion;
+            var serverInfo = ServerInfoHelpers.LoadServerInfo();
 
-            string servername = (string)Registry.GetValue(_regPath, "ServerName", null);
-            if (servername != null)
+            if (!ServerInfoHelpers.ServerInfoIsValid(serverInfo))
             {
-                expansion = ((int)Registry.GetValue(_regPath, "Expansion", 0)) != 0;
-                try
-                {
-                    serverHost = Dns.GetHostEntry(servername);
-                }
-                catch
-                {
-                    serverHost = null;
-                }
+                if (serverInfo == null)
+                    serverInfo = new ServerInfo();
 
-                version = (byte)(int)Registry.GetValue(_regPath, "WC3Version", 0);
-            }
-            else
-            {
-                serverHost = null;
-                version = 0;
-                expansion = false;
-            }
-
-            if (serverHost == null || version == 0)
-            {
-                var result = ShowInfoDialog(ref serverHost, ref version, ref expansion);
+                var result = ServerInfoHelpers.ShowInfoDialog(serverInfo);
                 if (!result)
                     return;
             }
 
-            MainForm mainForm = new MainForm(serverHost, version, expansion);
+            MainForm mainForm = new MainForm(serverInfo);
 
             Application.Run(mainForm);
         }
 
-        static bool ShowInfoDialog(ref IPHostEntry host, ref byte version, ref bool expansion)
+        public MainForm(ServerInfo serverInfo)
         {
-            using (var dlg = new ServerInfoDlg())
-            {
-                if (host != null)
-                {
-                    dlg.Host = host;
-                    dlg.Expansion = expansion;
-                    dlg.Version = version;
-                }
-                if (dlg.ShowDialog() == DialogResult.Cancel)
-                    return false;
+            _serverInfo = serverInfo;
 
-                host = dlg.Host;
-                version = dlg.Version;
-                expansion = dlg.Expansion;
-            }
-
-            Registry.SetValue(_regPath, "ServerName", host.HostName, RegistryValueKind.String);
-            Registry.SetValue(_regPath, "Expansion", expansion ? 1 : 0, RegistryValueKind.DWord);
-            Registry.SetValue(_regPath, "WC3Version", version, RegistryValueKind.DWord);
-
-            return true;
-        }
-
-        public MainForm(IPHostEntry serverHost, byte version, bool expansion)
-        {
             InitializeComponent();
 
-            ServerHost = serverHost;
-            Version = version;
-            Expansion = expansion;
-        }
-
-        public IPHostEntry ServerHost
-        {
-            get { return _serverHost; }
-            set
-            {
-                OnLostGame();
-
-                _serverHost = value;
-                _serverEP = new IPEndPoint(_serverHost.AddressList[0], 0);
-
-                string addrdesc;
-                if (_serverHost.AddressList[0].ToString() == _serverHost.HostName)
-                    addrdesc = _serverHost.HostName;
-                else
-                    addrdesc = String.Format("{0} ({1})", _serverHost.HostName, _serverHost.AddressList[0].ToString());
-
-                serverAddressValueLabel.Text = addrdesc;
-
-                if (_browser != null) _browser.ServerAddress = _serverHost.AddressList[0];
-            }
-        }
-
-        public bool Expansion
-        {
-            get { return _expansion; }
-            set
-            {
-                _expansion = value;
-                if (_browser != null) _browser.Expansion = value;
-            }
-        }
-
-        public byte Version
-        {
-            get { return _version; }
-            set
-            {
-                _version = value;
-                if (_browser != null) _browser.Version = value;
-            }
+            OnServerInfoChanged();
         }
 
         void ResetGameInfo()
@@ -241,7 +149,7 @@ namespace Foole.WC3Proxy
 
         void LaunchWarcraftMenuItem_Click(object sender, EventArgs e)
         {
-            ExecuteWC3(Expansion);
+            ExecuteWC3(_serverInfo.Expansion);
         }
 
         void MainForm_Shown(object sender, EventArgs e)
@@ -252,7 +160,7 @@ namespace Foole.WC3Proxy
 
         void StartBrowser()
         {
-            _browser = new Browser(ServerHost.AddressList[0], _listener.LocalEndPoint.Port, Version, Expansion);
+            _browser = new Browser(_serverHost.AddressList[0], _listener.LocalEndPoint.Port, _serverInfo.Version, _serverInfo.Expansion);
             _browser.QuerySent += Browser_QuerySent;
             _browser.FoundServer += Browser_FoundServer;
             _browser.Run();
@@ -269,8 +177,6 @@ namespace Foole.WC3Proxy
 
         void Browser_QuerySent()
         {
-            // TODO: show an activity indicator?
-
             // We don't receive the "server cancelled" messages
             // because they are only ever broadcast to the host's LAN.
             if (_foundGame)
@@ -283,8 +189,11 @@ namespace Foole.WC3Proxy
 
         void OnLostGame()
         {
-            if (_browser != null) _browser.SendGameCancelled(_gameInfo.GameId);
-            if (_foundGame) Invoke(new Action(ResetGameInfo));
+            if (_browser != null)
+                _browser.SendGameCancelled(_gameInfo.GameId);
+
+            if (_foundGame)
+                Invoke(new Action(ResetGameInfo));
         }
 
         void StartTcpProxy()
@@ -321,6 +230,7 @@ namespace Foole.WC3Proxy
                 Invoke(new Action(UpdateClientCount));
                 return;
             }
+
             clientCountValueLabel.Text = _proxies.Count.ToString();
         }
 
@@ -339,6 +249,8 @@ namespace Foole.WC3Proxy
             _listener.Stop();
             foreach (TcpProxy p in _proxies)
                 p.Stop();
+
+            _proxies.Clear();
         }
 
         void MainForm_FormClosing(object sender, FormClosingEventArgs e)
@@ -366,15 +278,30 @@ namespace Foole.WC3Proxy
 
         void ChangeServerMenuItem_Click(object sender, EventArgs e)
         {
-            IPHostEntry host = ServerHost;
-            bool expansion = Expansion;
-            byte version = Version;
-
-            if (ShowInfoDialog(ref host, ref version, ref expansion))
+            if (ServerInfoHelpers.ShowInfoDialog(_serverInfo))
             {
-                ServerHost = host;
-                Version = version;
-                Expansion = expansion;
+                OnLostGame();
+
+                OnServerInfoChanged();
+            }
+        }
+
+        void OnServerInfoChanged()
+        {
+            _serverHost = Dns.GetHostEntry(_serverInfo.Hostname);
+            _serverEP = new IPEndPoint(_serverHost.AddressList[0], 0);
+
+            string description;
+            if (_serverHost.AddressList[0].ToString() == _serverHost.HostName)
+                description = _serverHost.HostName;
+            else
+                description = String.Format("{0} ({1})", _serverHost.HostName, _serverHost.AddressList[0].ToString());
+
+            serverAddressValueLabel.Text = description;
+
+            if (_browser != null)
+            {
+                _browser.SetConfiguration(_serverHost.AddressList[0], _serverInfo.Version, _serverInfo.Expansion);
             }
         }
 

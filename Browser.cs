@@ -54,38 +54,21 @@ namespace Foole.WC3Proxy
             _queryTimer.Elapsed += new ElapsedEventHandler(QueryTimer_Elapsed);
             // WC3 always listens on UDP 6112
             _serverEP = new IPEndPoint(serverAddress, 6112);
+
+            UpdateBrowsePacket();
         }
 
-        public byte Version
+        public void SetConfiguration(IPAddress serverAddress, byte version, bool expansion)
         {
-            get { return _version; }
-            set
-            {
-                _version = value;
-                UpdateBrowsePacket();
-            }
-        }
+            _serverEP.Address = serverAddress;
+            _version = version;
+            _expansion = expansion;
 
-        public bool Expansion
-        {
-            get { return _expansion; }
-            set
-            {
-                _expansion = value;
-                UpdateBrowsePacket();
-            }
-        }
-
-        public IPAddress ServerAddress
-        {
-            get { return _serverEP.Address; }
-            set { _serverEP.Address = value; }
+            UpdateBrowsePacket();
         }
 
         public void Run()
         {
-            UpdateBrowsePacket();
-
             _browseSocket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
             _browseSocket.Bind(new IPEndPoint(IPAddress.Any, 0));
             _browseSocket.EnableBroadcast = true;
