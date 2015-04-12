@@ -30,12 +30,12 @@ namespace Foole.Net
     sealed class Listener
     {
         Socket _listenSocket;
-        GotConnectionDelegate _connectionHandler;
-        IPAddress _address;
+        readonly GotConnectionDelegate _connectionHandler;
+        readonly IPAddress _address;
         int _port;
 
         bool _stop;
-        AsyncCallback _acceptCallback;
+        readonly AsyncCallback _acceptCallback;
 
         public Listener(IPAddress address, int port, GotConnectionDelegate connectionHandler)
         {

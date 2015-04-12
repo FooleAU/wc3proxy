@@ -30,12 +30,12 @@ namespace Foole.WC3Proxy
 
     sealed class TcpProxy
     {
-        Socket _clientSocket;
-        Socket _serverSocket;
-        EndPoint _serverEP;
+        readonly Socket _clientSocket;
+        readonly Socket _serverSocket;
+        readonly EndPoint _serverEP;
+        readonly byte[] _buffer = new byte[2048];
         Thread _thread;
         bool _running;
-        byte[] _buffer = new byte[2048];
 
         public event ProxyDisconnectedHandler ProxyDisconnected;
 

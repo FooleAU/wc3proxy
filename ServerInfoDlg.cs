@@ -27,8 +27,8 @@ namespace Foole.WC3Proxy
 {
     struct WC3Version
     {
-        public byte Id;
-        public string Description;
+        public readonly byte Id;
+        public readonly string Description;
 
         public WC3Version(byte id, string description)
         {

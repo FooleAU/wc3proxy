@@ -35,13 +35,13 @@ namespace Foole.WC3Proxy
     {
         Socket _browseSocket;
         byte[] _browsePacket;
-        IPEndPoint _serverEP;
-        IPEndPoint _clientEP = new IPEndPoint(IPAddress.Broadcast, 6112);
-        Timer _queryTimer;
+        readonly IPEndPoint _serverEP;
+        readonly IPEndPoint _clientEP = new IPEndPoint(IPAddress.Broadcast, 6112);
+        readonly Timer _queryTimer;
         bool _querying;
-        byte[] _buffer = new byte[512];
+        readonly byte[] _buffer = new byte[512];
         bool _expansion;
-        int _proxyPort;
+        readonly int _proxyPort;
         byte _version; // 1.22 = 0x16, 1.21 = 0x15
 
         public event FoundServerHandler FoundServer;

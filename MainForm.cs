@@ -36,8 +36,8 @@ namespace Foole.WC3Proxy
     sealed partial class MainForm : Form
     {
         Listener _listener; // This waits for proxy connections
-        List<TcpProxy> _proxies; // A collection of game proxies.  Usually we would only need 1 proxy.
         Browser _browser; // This sends game info queries to the server and forwards the responses to the client
+        readonly List<TcpProxy> _proxies = new List<TcpProxy>(); // A collection of game proxies.  Usually we would only need 1 proxy.
 
         IPHostEntry _serverHost;
         IPEndPoint _serverEP;
@@ -49,8 +49,8 @@ namespace Foole.WC3Proxy
         DateTime _lastFoundServer;
         GameInfo _gameInfo;
 
-        readonly string _caption = "WC3 Proxy";
-        readonly int _balloonTipTimeout = 1000;
+        const string _caption = "WC3 Proxy";
+        const int _balloonTipTimeout = 1000;
 
         static readonly string _regPath = @"HKEY_CURRENT_USER\Software\Foole\WC3 Proxy";
 
@@ -289,8 +289,6 @@ namespace Foole.WC3Proxy
 
         void StartTcpProxy()
         {
-            _proxies = new List<TcpProxy>();
-
             _listener = new Listener(new GotConnectionDelegate(GotConnection));
             try
             {
