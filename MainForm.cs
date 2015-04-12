@@ -61,25 +61,6 @@ namespace Foole.WC3Proxy
         // opengl
         // d3d          (Default)
 
-        static void Main(string[] args)
-        {
-            var serverInfo = ServerInfoHelpers.LoadServerInfo();
-
-            if (!ServerInfoHelpers.ServerInfoIsValid(serverInfo))
-            {
-                if (serverInfo == null)
-                    serverInfo = new ServerInfo();
-
-                var result = ServerInfoHelpers.ShowInfoDialog(serverInfo);
-                if (!result)
-                    return;
-            }
-
-            MainForm mainForm = new MainForm(serverInfo);
-
-            Application.Run(mainForm);
-        }
-
         public MainForm(ServerInfo serverInfo)
         {
             _serverInfo = serverInfo;
