@@ -103,20 +103,21 @@ namespace Foole.WC3Proxy
 
         static bool ShowInfoDialog(ref IPHostEntry host, ref byte version, ref bool expansion)
         {
-            ServerInfoDlg dlg = new ServerInfoDlg();
-            if (host != null)
+            using (var dlg = new ServerInfoDlg())
             {
-                dlg.Host = host;
-                dlg.Expansion = expansion;
-                dlg.Version = version;
-            }
-            if (dlg.ShowDialog() == DialogResult.Cancel)
-                return false;
+                if (host != null)
+                {
+                    dlg.Host = host;
+                    dlg.Expansion = expansion;
+                    dlg.Version = version;
+                }
+                if (dlg.ShowDialog() == DialogResult.Cancel)
+                    return false;
 
-            host = dlg.Host;
-            version = dlg.Version;
-            expansion = dlg.Expansion;
-            dlg.Dispose();
+                host = dlg.Host;
+                version = dlg.Version;
+                expansion = dlg.Expansion;
+            }
 
             Registry.SetValue(_regPath, "ServerName", host.HostName, RegistryValueKind.String);
             Registry.SetValue(_regPath, "Expansion", expansion ? 1 : 0, RegistryValueKind.DWord);
@@ -377,7 +378,8 @@ namespace Foole.WC3Proxy
 
         void HelpAboutMenuItem_Click(object sender, EventArgs e)
         {
-            new AboutBox().ShowDialog();
+            using (var dlg = new AboutBox())
+                dlg.ShowDialog();
         }
     }
 }
