@@ -26,6 +26,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Windows.Forms;
 using Foole.Net; // For Listener
+using Foole.WC3Proxy.Warcraft3;
 using Microsoft.Win32; // for Registry
 
 namespace Foole.WC3Proxy
@@ -209,8 +210,7 @@ namespace Foole.WC3Proxy
 
         void ExecuteWC3(bool expansion)
         {
-            string programkey = expansion ? "ProgramX" : "Program";
-            string program = (string)Registry.GetValue(@"HKEY_CURRENT_USER\Software\Blizzard Entertainment\Warcraft III", programkey, null);
+            string program = Configuration.GetExecutableFilename(expansion);
 
             if (program == null)
             {
@@ -224,11 +224,9 @@ namespace Foole.WC3Proxy
             }
             catch (Exception e)
             {
-                string message = string.Format("Unable to launch WC3: {0}\n{1}", e.Message, program);
+                string message = String.Format("Unable to launch WC3: {0}\n{1}", e.Message, program);
                 MessageBox.Show(message, _caption, MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
-                return;
             }
-            // TODO: If the file doesnt exist, just launch war3.exe?
         }
 
         void mnuFileExit_Click(object sender, EventArgs e)

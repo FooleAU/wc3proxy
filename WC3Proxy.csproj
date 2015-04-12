@@ -83,6 +83,9 @@
       <DependentUpon>ServerInfoDlg.cs</DependentUpon>
     </Compile>
     <Compile Include="TcpProxy.cs" />
+    <Compile Include="Warcraft3\Configuration.cs" />
+    <Compile Include="Warcraft3\GameInfo.cs" />
+    <Compile Include="Warcraft3\QueryProtocol.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />

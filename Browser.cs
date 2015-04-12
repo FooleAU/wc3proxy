@@ -25,20 +25,10 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Timers;
+using Foole.WC3Proxy.Warcraft3;
 
 namespace Foole.WC3Proxy
 {
-    struct GameInfo
-    {
-        public int GameId;
-        public string Name;
-        public string Map;
-        public int Port;
-        public int SlotCount;
-        public int CurrentPlayers;
-        public int PlayerSlots;
-    }
-
     delegate void FoundServerHandler(GameInfo server);
 
     sealed class Browser
@@ -127,19 +117,19 @@ namespace Foole.WC3Proxy
             ProcessResponses();
         }
 
-        public void SendQuery()
+        void SendQuery()
         {
             _browseSocket.SendTo(_browsePacket, _serverEP);
             if (QuerySent != null) QuerySent();
         }
 
-        public bool ProcessResponses()
+        bool ProcessResponses()
         {
             bool receivedany = false;
 
             while (_browseSocket.Poll(0, SelectMode.SelectRead))
             {
-                int len = 0;
+                int len;
                 try
                 {
                     len = _browseSocket.Receive(_buffer);
@@ -151,7 +141,11 @@ namespace Foole.WC3Proxy
                 }
                 if (len == 0) break;
 
-                if (ExtractGameInfo(_buffer, len) == false) continue;
+                var gameInfo = QueryProtocol.ExtractGameInfo(_buffer, len);
+                if (gameInfo == null)
+                    continue;
+
+                OnFoundServer(gameInfo.Value);
 
                 receivedany = true;
                 ModifyGameName(_buffer);
@@ -162,83 +156,17 @@ namespace Foole.WC3Proxy
             return receivedany;
         }
 
-        // Extracts the server's details from the query response and raises an event for it
-        bool ExtractGameInfo(byte[] response, int Length)
-        {
-            if (response[0] != 0xf7 || response[1] != 0x30) return false;
-
-            GameInfo game = new GameInfo();
-
-            game.GameId = BitConverter.ToInt32(response, 0xc);
-            game.Name = StringFromArray(response, 0x14);
-
-            int cryptstart = 0x14 + game.Name.Length + 1 + 1; // one extra byte after the server name
-            byte[] decrypted = Decrypt(response, cryptstart);
-            game.Map = StringFromArray(decrypted, 0xd);
-
-            game.Port = BitConverter.ToUInt16(response, Length - 2);
-            game.SlotCount = BitConverter.ToInt32(response, Length - 22);
-            game.CurrentPlayers = BitConverter.ToInt32(response, Length - 14);
-            game.PlayerSlots = BitConverter.ToInt32(response, Length - 10);
-
-            if (FoundServer != null) FoundServer(game);
-            SendGameAnnounce(game);
-
-            return true;
-        }
-
         public void SendGameCancelled(int gameId)
         {
-            byte[] packet = new byte[] { 0xf7, 0x33, 0x08, 0x00, (byte)gameId, 0x00, 0x00, 0x00 };
+            byte[] packet = QueryProtocol.GetGameCancelledPacket(gameId);
             _browseSocket.SendTo(packet, _clientEP);
         }
 
         // The client wont update the player count unless this is sent
-        public void SendGameAnnounce(GameInfo gameInfo)
+        void SendGameAnnounce(GameInfo gameInfo)
         {
-            int players = gameInfo.SlotCount - gameInfo.PlayerSlots + gameInfo.CurrentPlayers;
-            byte[] packet = new byte[] { 0xf7, 0x32, 0x10, 0x00, (byte)gameInfo.GameId, 0x00, 0x00, 0x00, (byte)players, 0, 0, 0, (byte)gameInfo.SlotCount, 0, 0, 0 };
+            byte[] packet = QueryProtocol.GetGameAnnouncePacket(gameInfo);
             _browseSocket.SendTo(packet, _clientEP);
-        }
-
-        //This is also used to decrypt recorded game file headers
-        byte[] Decrypt(byte[] data, int offset)
-        {
-            // TODO: calculate the real result length (Data.Length * 8 / 9?).
-            // in=37, out=30.  in=3a, out=32.
-            MemoryStream output = new MemoryStream();
-            int pos = 0;
-            byte mask = 0;
-            while (true)
-            {
-                byte b = data[pos + offset];
-                if (b == 0) break;
-                if (pos % 8 == 0)
-                {
-                    mask = b;
-                }
-                else
-                {
-                    if ((mask & (0x1 << (pos % 8))) == 0)
-                        output.WriteByte((byte)(b - 1));
-                    else
-                        output.WriteByte(b);
-                }
-                pos++;
-            }
-            return output.ToArray();
-        }
-
-        string StringFromArray(byte[] data, int offset)
-        {
-            StringBuilder sb = new StringBuilder();
-            while (true)
-            {
-                char c = (char)data[offset++];
-                if (c == 0) break;
-                sb.Append(c);
-            }
-            return sb.ToString();
         }
 
         // Replace "Local Game" with "Proxy Game"
@@ -254,18 +182,21 @@ namespace Foole.WC3Proxy
 
         void ModifyGamePort(byte[] response, int length, int port)
         {
-            int index = length - 2;
-            response[index] = (byte)(port & 0xff);
-            response[index + 1] = (byte)(port >> 8);
+            response[length - 2] = (byte)(port & 0xff);
+            response[length - 1] = (byte)(port >> 8);
         }
 
-        // Dummy version with hard coded query packet
         void UpdateBrowsePacket()
         {
-            if (_expansion) // TFT - PX3W instead of 3RAW
-                _browsePacket = new byte[] { 0xf7, 0x2f, 0x10, 0x00, 0x50, 0x58, 0x33, 0x57, _version, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
-            else // ROC
-                _browsePacket = new byte[] { 0xf7, 0x2f, 0x10, 0x00, 0x33, 0x52, 0x41, 0x57, _version, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
+            _browsePacket = QueryProtocol.GetBrowsePacket(_expansion, _version);
+        }
+
+        void OnFoundServer(GameInfo gameInfo)
+        {
+            if (FoundServer != null)
+                FoundServer(gameInfo);
+
+            SendGameAnnounce(gameInfo);
         }
     }
 }
