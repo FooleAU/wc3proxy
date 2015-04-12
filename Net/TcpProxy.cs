@@ -24,7 +24,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Threading;
 
-namespace Foole.WC3Proxy
+namespace Foole.WC3Proxy.Net
 {
     delegate void ProxyDisconnectedHandler(TcpProxy Proxy);
 

@@ -25,7 +25,7 @@ using System.Diagnostics; // for Process
 using System.Net;
 using System.Net.Sockets;
 using System.Windows.Forms;
-using Foole.Net; // For Listener
+using Foole.WC3Proxy.Net;
 using Foole.WC3Proxy.Warcraft3;
 using Microsoft.Win32; // for Registry
 

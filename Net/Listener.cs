@@ -23,7 +23,7 @@ using System;
 using System.Net;
 using System.Net.Sockets;
 
-namespace Foole.Net
+namespace Foole.WC3Proxy.Net
 {
     delegate void GotConnectionDelegate(Socket ClientSocket);
 
