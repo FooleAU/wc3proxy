@@ -229,12 +229,12 @@ namespace Foole.WC3Proxy
             }
         }
 
-        void mnuFileExit_Click(object sender, EventArgs e)
+        void FileExitMenuItem_Click(object sender, EventArgs e)
         {
             Application.Exit();
         }
 
-        void mnuLaunchWarcraft_Click(object sender, EventArgs e)
+        void LaunchWarcraftMenuItem_Click(object sender, EventArgs e)
         {
             ExecuteWC3(Expansion);
         }
@@ -356,12 +356,12 @@ namespace Foole.WC3Proxy
             ShowInTaskbar = (WindowState != FormWindowState.Minimized);
         }
 
-        void exitToolStripMenuItem_Click(object sender, EventArgs e)
+        void ExitMenuItem_Click(object sender, EventArgs e)
         {
             Application.Exit();
         }
 
-        void mnuChangeServer_Click(object sender, EventArgs e)
+        void ChangeServerMenuItem_Click(object sender, EventArgs e)
         {
             IPHostEntry host = ServerHost;
             bool expansion = Expansion;
@@ -375,7 +375,7 @@ namespace Foole.WC3Proxy
             }
         }
 
-        void mnuHelpAbout_Click(object sender, EventArgs e)
+        void HelpAboutMenuItem_Click(object sender, EventArgs e)
         {
             new AboutBox().ShowDialog();
         }

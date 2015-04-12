@@ -134,7 +134,7 @@ namespace Foole.WC3Proxy
             this.toolsLaunchWarcraftMenuItem.Name = "toolsLaunchWarcraftMenuItem";
             this.toolsLaunchWarcraftMenuItem.Size = new System.Drawing.Size(173, 22);
             this.toolsLaunchWarcraftMenuItem.Text = "Launch Warcraft III";
-            this.toolsLaunchWarcraftMenuItem.Click += new System.EventHandler(this.mnuLaunchWarcraft_Click);
+            this.toolsLaunchWarcraftMenuItem.Click += new System.EventHandler(this.LaunchWarcraftMenuItem_Click);
             // 
             // tableLayoutPanel
             // 
@@ -252,14 +252,14 @@ namespace Foole.WC3Proxy
             this.fileChangeServerMenuItem.Name = "fileChangeServerMenuItem";
             this.fileChangeServerMenuItem.Size = new System.Drawing.Size(152, 22);
             this.fileChangeServerMenuItem.Text = "Change server";
-            this.fileChangeServerMenuItem.Click += new System.EventHandler(this.mnuChangeServer_Click);
+            this.fileChangeServerMenuItem.Click += new System.EventHandler(this.ChangeServerMenuItem_Click);
             // 
             // fileExitMenuItem
             // 
             this.fileExitMenuItem.Name = "fileExitMenuItem";
             this.fileExitMenuItem.Size = new System.Drawing.Size(152, 22);
             this.fileExitMenuItem.Text = "E&xit";
-            this.fileExitMenuItem.Click += new System.EventHandler(this.mnuFileExit_Click);
+            this.fileExitMenuItem.Click += new System.EventHandler(this.FileExitMenuItem_Click);
             // 
             // helpMenu
             // 
@@ -275,7 +275,7 @@ namespace Foole.WC3Proxy
             this.helpAboutMenuItem.Name = "helpAboutMenuItem";
             this.helpAboutMenuItem.Size = new System.Drawing.Size(152, 22);
             this.helpAboutMenuItem.Text = "&About";
-            this.helpAboutMenuItem.Click += new System.EventHandler(this.mnuHelpAbout_Click);
+            this.helpAboutMenuItem.Click += new System.EventHandler(this.HelpAboutMenuItem_Click);
             // 
             // icon
             // 
@@ -298,7 +298,7 @@ namespace Foole.WC3Proxy
             this.iconExitMenuItem.Name = "iconExitMenuItem";
             this.iconExitMenuItem.Size = new System.Drawing.Size(67, 22);
             this.iconExitMenuItem.Text = "Exit";
-            this.iconExitMenuItem.Click += new System.EventHandler(this.exitToolStripMenuItem_Click);
+            this.iconExitMenuItem.Click += new System.EventHandler(this.ExitMenuItem_Click);
             // 
             // MainForm
             // 

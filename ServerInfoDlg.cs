@@ -97,7 +97,7 @@ namespace Foole.WC3Proxy
             }
         }
 
-        void btnOk_Click(object sender, EventArgs e)
+        void OkButton_Click(object sender, EventArgs e)
         {
             if (serverAddressTextBox.Text.Length == 0)
             {
@@ -124,7 +124,7 @@ namespace Foole.WC3Proxy
             Hide();
         }
 
-        void btnCancel_Click(object sender, EventArgs e)
+        void CancelButton_Click(object sender, EventArgs e)
         {
             DialogResult = DialogResult.Cancel;
             Hide();
