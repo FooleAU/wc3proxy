@@ -13,19 +13,21 @@ namespace Foole.WC3Proxy
 
     static class ServerInfoHelpers
     {
-        static readonly string _regPath = @"HKEY_CURRENT_USER\Software\Foole\WC3 Proxy";
+        static readonly string _regPathFull = @"HKEY_CURRENT_USER\Software\Foole\WC3 Proxy";
+        static readonly string _regPathSubKey = @"Software\Foole\WC3 Proxy";
+        static readonly string _regPathTopLevelSubKey = @"Software\Foole";
 
         public static ServerInfo LoadServerInfo()
         {
-            string servername = (string)Registry.GetValue(_regPath, "ServerName", null);
+            string servername = (string)Registry.GetValue(_regPathFull, "ServerName", null);
             if (servername == null)
                 return null;
 
             return new ServerInfo
             {
                 Hostname = servername,
-                Expansion = ((int)Registry.GetValue(_regPath, "Expansion", 0)) != 0,
-                Version = (byte)(int)Registry.GetValue(_regPath, "WC3Version", 0)
+                Expansion = ((int)Registry.GetValue(_regPathFull, "Expansion", 0)) != 0,
+                Version = (byte)(int)Registry.GetValue(_regPathFull, "WC3Version", 0)
             };
         }
 
@@ -55,9 +57,19 @@ namespace Foole.WC3Proxy
 
         public static void SaveServerInfo(ServerInfo serverInfo)
         {
-            Registry.SetValue(_regPath, "ServerName", serverInfo.Hostname, RegistryValueKind.String);
-            Registry.SetValue(_regPath, "Expansion", serverInfo.Expansion ? 1 : 0, RegistryValueKind.DWord);
-            Registry.SetValue(_regPath, "WC3Version", serverInfo.Version, RegistryValueKind.DWord);
+            Registry.SetValue(_regPathFull, "ServerName", serverInfo.Hostname, RegistryValueKind.String);
+            Registry.SetValue(_regPathFull, "Expansion", serverInfo.Expansion ? 1 : 0, RegistryValueKind.DWord);
+            Registry.SetValue(_regPathFull, "WC3Version", serverInfo.Version, RegistryValueKind.DWord);
+        }
+
+        public static void DeleteFromRegistry()
+        {
+            Registry.CurrentUser.DeleteSubKey(_regPathSubKey, false);
+            try
+            {
+                Registry.CurrentUser.DeleteSubKey(_regPathTopLevelSubKey);
+            }
+            catch { } // InvalidOperationException: Registry key has subkeys and recursive removes are not supported by this method.
         }
     }
 }

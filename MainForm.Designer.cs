@@ -36,6 +36,7 @@ namespace Foole.WC3Proxy
             System.Windows.Forms.Label playerCountLabel;
             System.Windows.Forms.Label clientCountLabel;
             System.Windows.Forms.ToolStripMenuItem toolsMenu;
+            System.Windows.Forms.ToolStripMenuItem ToolsRemoveSettingsMenuItem;
             System.Windows.Forms.TableLayoutPanel tableLayoutPanel;
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
             this.toolsLaunchWarcraftMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -61,6 +62,7 @@ namespace Foole.WC3Proxy
             playerCountLabel = new System.Windows.Forms.Label();
             clientCountLabel = new System.Windows.Forms.Label();
             toolsMenu = new System.Windows.Forms.ToolStripMenuItem();
+            ToolsRemoveSettingsMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             tableLayoutPanel = new System.Windows.Forms.TableLayoutPanel();
             tableLayoutPanel.SuspendLayout();
             this.mainMenu.SuspendLayout();
@@ -124,17 +126,25 @@ namespace Foole.WC3Proxy
             // toolsMenu
             // 
             toolsMenu.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.toolsLaunchWarcraftMenuItem});
+            this.toolsLaunchWarcraftMenuItem,
+            ToolsRemoveSettingsMenuItem});
             toolsMenu.Name = "toolsMenu";
-            toolsMenu.Size = new System.Drawing.Size(48, 20);
+            toolsMenu.Size = new System.Drawing.Size(47, 20);
             toolsMenu.Text = "Tools";
             // 
             // toolsLaunchWarcraftMenuItem
             // 
             this.toolsLaunchWarcraftMenuItem.Name = "toolsLaunchWarcraftMenuItem";
-            this.toolsLaunchWarcraftMenuItem.Size = new System.Drawing.Size(173, 22);
+            this.toolsLaunchWarcraftMenuItem.Size = new System.Drawing.Size(235, 22);
             this.toolsLaunchWarcraftMenuItem.Text = "Launch Warcraft III";
             this.toolsLaunchWarcraftMenuItem.Click += new System.EventHandler(this.LaunchWarcraftMenuItem_Click);
+            // 
+            // ToolsRemoveSettingsMenuItem
+            // 
+            ToolsRemoveSettingsMenuItem.Name = "ToolsRemoveSettingsMenuItem";
+            ToolsRemoveSettingsMenuItem.Size = new System.Drawing.Size(235, 22);
+            ToolsRemoveSettingsMenuItem.Text = "&Remove settings from Registry";
+            ToolsRemoveSettingsMenuItem.Click += new System.EventHandler(this.ToolsRemoveSettingsMenuItem_Click);
             // 
             // tableLayoutPanel
             // 
@@ -250,14 +260,14 @@ namespace Foole.WC3Proxy
             // fileChangeServerMenuItem
             // 
             this.fileChangeServerMenuItem.Name = "fileChangeServerMenuItem";
-            this.fileChangeServerMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.fileChangeServerMenuItem.Size = new System.Drawing.Size(149, 22);
             this.fileChangeServerMenuItem.Text = "Change server";
             this.fileChangeServerMenuItem.Click += new System.EventHandler(this.ChangeServerMenuItem_Click);
             // 
             // fileExitMenuItem
             // 
             this.fileExitMenuItem.Name = "fileExitMenuItem";
-            this.fileExitMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.fileExitMenuItem.Size = new System.Drawing.Size(149, 22);
             this.fileExitMenuItem.Text = "E&xit";
             this.fileExitMenuItem.Click += new System.EventHandler(this.FileExitMenuItem_Click);
             // 
@@ -273,7 +283,7 @@ namespace Foole.WC3Proxy
             // helpAboutMenuItem
             // 
             this.helpAboutMenuItem.Name = "helpAboutMenuItem";
-            this.helpAboutMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.helpAboutMenuItem.Size = new System.Drawing.Size(107, 22);
             this.helpAboutMenuItem.Text = "&About";
             this.helpAboutMenuItem.Click += new System.EventHandler(this.HelpAboutMenuItem_Click);
             // 

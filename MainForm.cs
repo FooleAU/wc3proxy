@@ -292,5 +292,11 @@ namespace Foole.WC3Proxy
             using (var dlg = new AboutBox())
                 dlg.ShowDialog();
         }
+
+        void ToolsRemoveSettingsMenuItem_Click(object sender, EventArgs e)
+        {
+            ServerInfoHelpers.DeleteFromRegistry();
+            MessageBox.Show("Registry settings cleared", _caption, MessageBoxButtons.OK, MessageBoxIcon.Information);
+        }
     }
 }
