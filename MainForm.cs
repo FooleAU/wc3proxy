@@ -39,7 +39,7 @@ namespace Foole.WC3Proxy
         readonly List<TcpProxy> _proxies = new List<TcpProxy>(); // A collection of game proxies.  Usually we would only need 1 proxy.
 
         readonly ServerInfo _serverInfo;
-        IPHostEntry _serverHost;
+        IPAddress _serverAddress;
         IPEndPoint _serverEP;
 
         // TODO: Possibly move these (and associated code) into the Browser class
@@ -141,7 +141,7 @@ namespace Foole.WC3Proxy
 
         void StartBrowser()
         {
-            _browser = new Browser(_serverHost.AddressList[0], _listener.LocalEndPoint.Port, _serverInfo.Version, _serverInfo.Expansion);
+            _browser = new Browser(_serverAddress, _listener.LocalEndPoint.Port, _serverInfo.Version, _serverInfo.Expansion);
             _browser.QuerySent += Browser_QuerySent;
             _browser.FoundServer += Browser_FoundServer;
             _browser.Run();
@@ -269,20 +269,21 @@ namespace Foole.WC3Proxy
 
         void OnServerInfoChanged()
         {
-            _serverHost = Dns.GetHostEntry(_serverInfo.Hostname);
-            _serverEP = new IPEndPoint(_serverHost.AddressList[0], 0);
+            var serverHostEntry = Dns.GetHostEntry(_serverInfo.Hostname);
+            _serverAddress = serverHostEntry.AddressList[0];
+            _serverEP = new IPEndPoint(_serverAddress, 0);
 
             string description;
-            if (_serverHost.AddressList[0].ToString() == _serverHost.HostName)
-                description = _serverHost.HostName;
+            if (_serverAddress.ToString() == serverHostEntry.HostName)
+                description = serverHostEntry.HostName;
             else
-                description = String.Format("{0} ({1})", _serverHost.HostName, _serverHost.AddressList[0].ToString());
+                description = String.Format("{0} ({1})", serverHostEntry.HostName, _serverAddress.ToString());
 
             serverAddressValueLabel.Text = description;
 
             if (_browser != null)
             {
-                _browser.SetConfiguration(_serverHost.AddressList[0], _serverInfo.Version, _serverInfo.Expansion);
+                _browser.SetConfiguration(_serverAddress, _serverInfo.Version, _serverInfo.Expansion);
             }
         }
 
