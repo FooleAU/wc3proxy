@@ -269,15 +269,15 @@ namespace Foole.WC3Proxy
 
         void OnServerInfoChanged()
         {
-            var serverHostEntry = Dns.GetHostEntry(_serverInfo.Hostname);
-            _serverAddress = serverHostEntry.AddressList[0];
+            // Assume this wont fail because all code paths that lead here validate the hostname
+            _serverAddress = Utilities.ParseOrResolveIPAddress(_serverInfo.Hostname);
             _serverEP = new IPEndPoint(_serverAddress, 0);
 
             string description;
-            if (_serverAddress.ToString() == serverHostEntry.HostName)
-                description = serverHostEntry.HostName;
+            if (_serverAddress.ToString() == _serverInfo.Hostname)
+                description = _serverInfo.Hostname;
             else
-                description = String.Format("{0} ({1})", serverHostEntry.HostName, _serverAddress.ToString());
+                description = String.Format("{0} ({1})", _serverInfo.Hostname, _serverAddress);
 
             serverAddressValueLabel.Text = description;
 

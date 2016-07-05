@@ -20,8 +20,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
  */
 using System;
-using System.Net;
 using System.Windows.Forms;
+using Foole.WC3Proxy.Net;
 
 namespace Foole.WC3Proxy
 {
@@ -76,23 +76,8 @@ namespace Foole.WC3Proxy
 
         void OkButton_Click(object sender, EventArgs e)
         {
-            if (serverAddressTextBox.Text.Length == 0)
+            if (!ValidateServerAddress(serverAddressTextBox.Text))
             {
-                MessageBox.Show("Please enter a server address", "WC3 Proxy", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
-                serverAddressTextBox.Focus();
-                return;
-            }
-            try
-            {
-                UseWaitCursor = true;
-                Dns.GetHostEntry(serverAddressTextBox.Text);
-                UseWaitCursor = false;
-            }
-            catch (Exception ex)
-            {
-                UseWaitCursor = false;
-                // SocketException : No such host is known.
-                MessageBox.Show("DNS Lookup failed: " + ex.Message, "WC3 Proxy", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
                 serverAddressTextBox.Focus();
                 return;
             }
@@ -104,6 +89,24 @@ namespace Foole.WC3Proxy
 
             DialogResult = DialogResult.OK;
             Hide();
+        }
+
+        // An address is valid if it can be parsed or resolved to an IPAddress
+        bool ValidateServerAddress(string address)
+        {
+            if (String.IsNullOrEmpty(address))
+            {
+                MessageBox.Show("Please enter a server address", "WC3 Proxy", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+                return false;
+            }
+
+            if (Utilities.ParseOrResolveIPAddress(address) == null)
+            {
+                MessageBox.Show("Server address is invalid", "WC3 Proxy", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+                return false;
+            }
+
+            return true;
         }
 
         void CancelButton_Click(object sender, EventArgs e)

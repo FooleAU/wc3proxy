@@ -1,6 +1,5 @@
-﻿using System;
-using System.Net;
-using System.Windows.Forms;
+﻿using System.Windows.Forms;
+using Foole.WC3Proxy.Net;
 using Microsoft.Win32;
 
 namespace Foole.WC3Proxy
@@ -35,17 +34,8 @@ namespace Foole.WC3Proxy
             if (serverInfo == null)
                 return false;
 
-            if (String.IsNullOrEmpty(serverInfo.Hostname))
+            if (Utilities.ParseOrResolveIPAddress(serverInfo.Hostname) == null)
                 return false;
-
-            try
-            {
-                Dns.GetHostEntry(serverInfo.Hostname);
-            }
-            catch
-            {
-                return false;
-            }
 
             return true;
         }
