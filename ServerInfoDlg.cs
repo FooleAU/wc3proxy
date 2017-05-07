@@ -52,13 +52,14 @@ namespace Foole.WC3Proxy
 
             InitializeComponent();
 
+            versionComboBox.Items.Add(new WC3Version(0x1c, "1.28"));
+            versionComboBox.Items.Add(new WC3Version(0x1b, "1.27"));
             versionComboBox.Items.Add(new WC3Version(0x1a, "1.26"));
             versionComboBox.Items.Add(new WC3Version(0x19, "1.25"));
             versionComboBox.Items.Add(new WC3Version(0x18, "1.24"));
             versionComboBox.Items.Add(new WC3Version(0x17, "1.23"));
             versionComboBox.Items.Add(new WC3Version(0x16, "1.22"));
             versionComboBox.Items.Add(new WC3Version(0x15, "1.21"));
-            versionComboBox.Items.Add(new WC3Version(0x1b, "1.27 (Untested)"));
 
             serverAddressTextBox.Text = serverInfo.Hostname;
 
