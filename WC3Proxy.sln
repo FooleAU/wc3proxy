@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.26124.0
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30711.63
 MinimumVisualStudioVersion = 15.0.26124.0
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WC3Proxy", "WC3Proxy\WC3Proxy.csproj", "{B8EFC5FD-C38B-4686-9816-236352E6D092}"
 EndProject
@@ -14,9 +14,6 @@ Global
 		Release|x64 = Release|x64
 		Release|x86 = Release|x86
 	EndGlobalSection
-	GlobalSection(SolutionProperties) = preSolution
-		HideSolutionNode = FALSE
-	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{B8EFC5FD-C38B-4686-9816-236352E6D092}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{B8EFC5FD-C38B-4686-9816-236352E6D092}.Debug|Any CPU.Build.0 = Debug|Any CPU
@@ -24,11 +21,17 @@ Global
 		{B8EFC5FD-C38B-4686-9816-236352E6D092}.Debug|x64.Build.0 = Debug|Any CPU
 		{B8EFC5FD-C38B-4686-9816-236352E6D092}.Debug|x86.ActiveCfg = Debug|Any CPU
 		{B8EFC5FD-C38B-4686-9816-236352E6D092}.Debug|x86.Build.0 = Debug|Any CPU
-		{B8EFC5FD-C38B-4686-9816-236352E6D092}.Release|Any CPU.ActiveCfg = Debug|Any CPU
-		{B8EFC5FD-C38B-4686-9816-236352E6D092}.Release|Any CPU.Build.0 = Debug|Any CPU
+		{B8EFC5FD-C38B-4686-9816-236352E6D092}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B8EFC5FD-C38B-4686-9816-236352E6D092}.Release|Any CPU.Build.0 = Release|Any CPU
 		{B8EFC5FD-C38B-4686-9816-236352E6D092}.Release|x64.ActiveCfg = Debug|Any CPU
 		{B8EFC5FD-C38B-4686-9816-236352E6D092}.Release|x64.Build.0 = Debug|Any CPU
 		{B8EFC5FD-C38B-4686-9816-236352E6D092}.Release|x86.ActiveCfg = Debug|Any CPU
 		{B8EFC5FD-C38B-4686-9816-236352E6D092}.Release|x86.Build.0 = Debug|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {C3A2DBE1-0A7B-4D91-A737-F5960C89C1C1}
 	EndGlobalSection
 EndGlobal
