@@ -52,6 +52,7 @@ namespace Foole.WC3Proxy
 
             InitializeComponent();
 
+            versionComboBox.Items.Add(new WC3Version(0x1d, "1.29"));
             versionComboBox.Items.Add(new WC3Version(0x1c, "1.28"));
             versionComboBox.Items.Add(new WC3Version(0x1b, "1.27"));
             versionComboBox.Items.Add(new WC3Version(0x1a, "1.26"));
